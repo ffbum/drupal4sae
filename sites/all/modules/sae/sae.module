@@ -6,7 +6,7 @@
  */
 
 /**
- * Implementation of hook_perm().
+ * Implements hook_perm().
  */
 function sae_permission() {
   return array(
@@ -18,7 +18,7 @@ function sae_permission() {
 }
 
 /**
- * Implementation of hook_menu().
+ * Implements hook_menu().
  */
 function sae_menu() {
   $items['admin/config/system/saemailer'] = array(
@@ -39,7 +39,6 @@ function sae_menu() {
  * @see sae_mailer_settings_form_submit()
  */
 function sae_mailer_settings_form($form, $form_state) {
-$stor = sae_get_storage();
   $form['sae_on'] = array(
     '#type' => 'checkbox',
     '#title' => t('Use SAE Mail to send e-mails'),
@@ -83,10 +82,12 @@ $stor = sae_get_storage();
     '#description' => t('Always enter your username including mail adress like "example@gmail.com".'),
   );
   $have_password = (variable_get('smtp_password', '') != '');
+  $password_title = $have_password ? t('Change password') : t('Password');
+  $password_description = $have_password ? t('Leave empty if you do not intend to change the current password.') : t('Password of smtp server, usually is your email password.');
   $form['auth']['smtp_password'] = array(
     '#type' => 'password',
-    '#title' => $have_password ? t('Change password') : t('Password'),
-    '#description' => $have_password ? t('Leave empty if you do not intend to change the current password.') : t('Password of smtp server, usually is your email password.'),
+    '#title' => check_plain($password_title),
+    '#description' => check_plain($password_description),
   );
 
   // Send a test email message if an address has been entered.
@@ -128,7 +129,8 @@ $stor = sae_get_storage();
 function sae_mailer_settings_form_validate($form, &$form_state) {
   if ($form_state['values']['sae_on']) {
     if (intval($form_state['values']['smtp_port']) == 0) {
-      //form_set_error('smtp_port', t('You must enter a valid SMTP port number.'));
+      // form_set_error('smtp_port', t('You must enter a valid SMTP port number.
+      // '));
     }
   }
 }
@@ -188,7 +190,7 @@ function sae_mailer_settings_form_submit($form, &$form_state) {
 }
 
 /**
- * Implementation of hook_mail().
+ * Implements hook_mail().
  */
 function sae_mail($key, &$message, $params) {
   // Alter test mail's subject and content.
@@ -208,16 +210,15 @@ function sae_mailer_enabled() {
 }
 
 /**
- * Extract address and optional display name of an e-mail address from phpmailer module.
+ * Extract address and optional display name of an e-mail address from phpmailer
+ * module.
  *
- * @param $string
+ * @param string $string
  *   A string containing one or more valid e-mail address(es) separated with
  *   commas.
  *
- * @return
+ * @return array
  *   An array containing all found e-mail addresses split into mail and name.
- *
- * @see http://tools.ietf.org/html/rfc5322#section-3.4
  */
 function sae_mailer_parse_address($string) {
   $parsed = array();
@@ -225,7 +226,7 @@ function sae_mailer_parse_address($string) {
   // The display name may contain commas (3.4). Extract all quoted strings
   // (3.2.4) to a stack and replace them with a placeholder to prevent
   // splitting at wrong places.
-  $string = preg_replace('/(".*?(?<!\\\\)")/e', '_sae_mailer_stack("$1")', $string);
+  $string = preg_replace_callback('/(".*?(?<!\\\\)")/', '_sae_mailer_stack', $string);
 
   // Build a regex that matches a name-addr (3.4).
   // @see valid_email_address()
@@ -239,7 +240,7 @@ function sae_mailer_parse_address($string) {
   // Split string into multiple parts and process each.
   foreach (explode(',', $string) as $email) {
     // Re-inject stripped placeholders.
-    $email = preg_replace('/\x01/e', '_sae_mailer_stack()', trim($email));
+    $email = preg_replace_callback('/\x01/', '_sae_mailer_stack', trim($email));
     // Check if it's a name-addr or a plain address (3.4).
     if (preg_match($adr_rx, $email, $matches)) {
       // SAE Mailer expects an unencoded display name.
@@ -253,24 +254,26 @@ function sae_mailer_parse_address($string) {
 }
 
 /**
- * Implements a FIFO stack to store extracted quoted strings from phpmailer module.
+ * Implements a FIFO stack to store extracted quoted strings from phpmailer
+ * module.
  */
-function _sae_mailer_stack($string = NULL) {
+function _sae_mailer_stack($matches = NULL) {
   static $stack = array();
 
-  if (!isset($string)) {
+  if (!isset($matches[1])) {
     // Unescape quoted characters (3.2.4) to prevent double escaping.
     return str_replace(array('\"', '\\\\'), array('"', '\\'), array_shift($stack));
   }
+  $string = $matches[1];
   // Remove surrounding quotes and push on stack.
-  array_push($stack, substr($string, 1, -1));
+  array_push($stack, drupal_substr($string, 1, -1));
   // Return placeholder substitution. 0x01 may never appear outside a quoted
   // string (3.2.3).
   return "\x01";
 }
 
 /**
- * Implementation of hook_disable().
+ * Implements hook_disable().
  */
 function sae_disable() {
   if (sae_mailer_enabled()) {
@@ -294,14 +297,15 @@ function sae_disable() {
 }
 
 /**
- * Implementation of hook_boot().
+ * Implements hook_boot().
  */
 function sae_boot() {
-  require_once DRUPAL_ROOT . '/sites/all/modules/sae/sae_storage_streams.inc';
+  global $conf;
+  $conf['file_temporary_path'] = SAE_TMP_PATH;
 }
 
 /**
- * Implementation of hook_stream_wrappers_alter().
+ * Implements hook_stream_wrappers_alter().
  */
 function sae_stream_wrappers_alter(&$wrappers) {
   $wrappers['public']['class'] = 'SaeStorageStreamWrapper';
@@ -309,7 +313,7 @@ function sae_stream_wrappers_alter(&$wrappers) {
 }
 
 /**
- * Implementation of hook_theme_registry_alter().
+ * Implements hook_theme_registry_alter().
  */
 function sae_theme_registry_alter(&$theme_registry) {
   $theme_registry['image_style']['function'] = 'theme_sae_image_style';
@@ -321,7 +325,7 @@ function sae_theme_registry_alter(&$theme_registry) {
  * System default image style theme direct image path to local file system,
  * but sae store them in storage, so we need fix it.
  *
- * @param $variables
+ * @param array $variables
  *   An associative array containing:
  *   - form: A render element representing the form.
  *
@@ -341,12 +345,12 @@ function theme_sae_image_style($variables) {
 
   // Determine the url for the styled image.
   $variables['path'] = image_style_url($variables['style_name'], $variables['path']);
-  //dsm($variables);
+
   return theme('image', $variables);
 }
 
 /**
- * Implementation of hook_form_FORM_ID_alter().
+ * Implements hook_form_FORM_ID_alter().
  */
 function sae_form_system_file_system_settings_alter(&$form, &$form_state, $form_id) {
   // Unregiste after build function for avoid directory check.
@@ -359,3 +363,13 @@ function sae_form_system_file_system_settings_alter(&$form, &$form_state, $form_
   $form['file_temporary_path']['#disabled'] = TRUE;
 }
 
+/**
+ * Implements hook_file_presave().
+ */
+function sae_file_presave($file) {
+  // Fetch filesize until file system is ready.
+  while (!$file->filesize) {
+    $file->filesize = filesize($file->uri);
+    sleep(1);
+  }
+}

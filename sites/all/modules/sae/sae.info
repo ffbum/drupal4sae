@@ -1,0 +1,8 @@
+name = Sina App Engine
+description = Integrates Sina App Engine mail system and storage sytem on Drupal.
+core = 7.x
+configure = admin/config/system/saemailer
+files[] = sae.mail.inc
+files[] = sae_storage_streams.inc
+required = TRUE
+

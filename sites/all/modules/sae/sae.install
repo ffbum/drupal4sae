@@ -1,0 +1,24 @@
+<?php
+
+/**
+ * @file
+ * SAE Mailer installation functions.
+ */
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function sae_uninstall() {
+  $mail_system = variable_get('mail_system', array('default-system' => 'DefaultMailSystem'));
+  $mail_system['default-system'] = 'DefaultMailSystem';
+  variable_set('mail_system', $mail_system);
+
+  variable_del('sae_on');
+  variable_del('smtp_host');
+  variable_del('smtp_hostbackup');
+  variable_del('smtp_port');
+  variable_del('smtp_tls');
+  variable_del('smtp_username');
+  variable_del('smtp_password');
+}
+

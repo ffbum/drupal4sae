@@ -1,0 +1,23 @@
+<?php
+
+/**
+ * @file
+ * SAE Cloud installation functions.
+ */
+
+/**
+ * Implements hook_install().
+ *
+ * Perform actions to set up the site for this profile.
+ */
+function saecloud_install() {
+  include_once DRUPAL_ROOT . '/profiles/standard/standard.install';
+  standard_install();
+  
+  // User SAE mail system as default
+  $mail_system = variable_get('mail_system', array('default-system' => 'DefaultMailSystem'));
+  $mail_system['default-system'] = 'SAEMailSystem';
+  variable_set('mail_system', $mail_system);
+  variable_set('sae_on', TRUE);
+}
+

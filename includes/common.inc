@@ -791,12 +791,12 @@ function drupal_http_request($url, array $options = array()) {
   );
   // stream_socket_client() requires timeout to be a float.
   $options['timeout'] = (float) $options['timeout'];
-
   switch ($uri['scheme']) {
     case 'http':
     case 'feed':
       $port = isset($uri['port']) ? $uri['port'] : 80;
-      $socket = 'tcp://' . $uri['host'] . ':' . $port;
+      // [SAE] fsockopn seperate host as secondary parameter.
+      $socket = 'tcp://' . $uri['host'];
       // RFC 2616: "non-standard ports MUST, default ports MAY be included".
       // We don't add the standard port to prevent from breaking rewrite rules
       // checking the host that do not take into account the port number.
@@ -805,7 +805,9 @@ function drupal_http_request($url, array $options = array()) {
     case 'https':
       // Note: Only works when PHP is compiled with OpenSSL support.
       $port = isset($uri['port']) ? $uri['port'] : 443;
-      $socket = 'ssl://' . $uri['host'] . ':' . $port;
+      // [SAE] fsockopn seperate host as secondary parameter.
+      // [Todo] SAE donesn't support ssl fetch.
+      $socket = 'ssl://' . $uri['host'];
       $options['headers']['Host'] = $uri['host'] . ($port != 443 ? ':' . $port : '');
       break;
     default:
@@ -813,13 +815,15 @@ function drupal_http_request($url, array $options = array()) {
       $result->code = -1003;
       return $result;
   }
-
+  
   if (empty($options['context'])) {
-    $fp = @stream_socket_client($socket, $errno, $errstr, $options['timeout']);
+    // [SAE] Change stream_socket_client to fsockopen.
+    $fp = @fsockopen($socket, $port, $errno, $errstr, $options['timeout']);
   }
   else {
+    // [SAE] Change stream_socket_client to fsockopen.
     // Create a stream with context. Allows verification of a SSL certificate.
-    $fp = @stream_socket_client($socket, $errno, $errstr, $options['timeout'], STREAM_CLIENT_CONNECT, $options['context']);
+    $fp = @fsockopen($socket, $port, $errno, $errstr, $options['timeout'], STREAM_CLIENT_CONNECT, $options['context']);
   }
 
   // Make sure the socket opened properly.

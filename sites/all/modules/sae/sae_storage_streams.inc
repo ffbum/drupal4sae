@@ -444,7 +444,8 @@ class SaeStorageStreamWrapper implements DrupalStreamWrapperInterface {
   public function dir_opendir($uri, $options) {
     $this->uri = $uri;
     $this->search_uris[$uri] = $uri;
-    $this->search_offset[$this->uri] = 0;
+    $this->dir_index[$this->uri] = 0;
+    $this->file_index[$this->uri] = 0;
     $this->options = $options;
     return TRUE;
   }
@@ -459,16 +460,22 @@ class SaeStorageStreamWrapper implements DrupalStreamWrapperInterface {
     $this->domain = $pathinfo['host'];
     $this->file = ltrim(strstr($path, $pathinfo['path']), '/\\');
 
-    $lists = $this->stor->getListByPath($this->domain, $this->file, 1, $this->search_offset[$this->uri]);
+    static $lists = array();
 
-    if (isset($lists['dirs'][0])) {
-      $dirname = $lists['dirs'][0]['name'];
-      $this->search_offset[$this->uri]++;
+    if (!isset($lists[$this->uri])) {
+      $lists[$this->uri] = $this->stor->getListByPath($this->domain, $this->file, 1000);
+    }
+
+    $dir_index = $this->dir_index[$this->uri];
+    $file_index = $this->file_index[$this->uri];
+    if (isset($lists[$this->uri]['dirs'][$dir_index])) {
+      $dirname = $lists[$this->uri]['dirs'][$dir_index]['name'];
+      $this->dir_index[$this->uri]++;
       return $dirname;
     }
-    elseif (isset($lists['files'][0])) {
-      $filename = $lists['files'][0]['Name'];
-      $this->search_offset[$this->uri]++;
+    elseif (isset($lists[$this->uri]['files'][$file_index])) {
+      $filename = $lists[$this->uri]['files'][$file_index]['Name'];
+      $this->file_index[$this->uri]++;
       return $filename;
     }
     return FALSE;

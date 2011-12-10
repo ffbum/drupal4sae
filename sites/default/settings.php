@@ -183,6 +183,7 @@ $databases['default']['default'] = array(
   'username' => SAE_MYSQL_USER,
   'password' => SAE_MYSQL_PASS,
   'host' => SAE_MYSQL_HOST_M.":".SAE_MYSQL_PORT,
+  'prefix' => 'dp2_',
 );
 $databases['default']['slave'][] = array(
   'driver' => 'mysql',
@@ -190,6 +191,7 @@ $databases['default']['slave'][] = array(
   'username' => SAE_MYSQL_USER,
   'password' => SAE_MYSQL_PASS,
   'host' => SAE_MYSQL_HOST_S.":".SAE_MYSQL_PORT,
+  'prefix' => 'dp2_',
 );
 /**
  * Access control for update.php script.
@@ -279,6 +281,8 @@ $drupal_hash_salt = '';
  * the cookie. The value 0 means "until the browser is closed".
  */
 //ini_set('session.cookie_lifetime', 2000000);
+// SAE can't support ini_set for session.
+session_set_cookie_params(2000000);
 
 /**
  * If you encounter a situation where users post a large amount of text, and

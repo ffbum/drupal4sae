@@ -216,7 +216,6 @@ function sae_mailer_enabled() {
  * @param string $string
  *   A string containing one or more valid e-mail address(es) separated with
  *   commas.
- *
  * @return array
  *   An array containing all found e-mail addresses split into mail and name.
  */
@@ -344,9 +343,39 @@ function theme_sae_image_style($variables) {
   $variables['height'] = $dimensions['height'];
 
   // Determine the url for the styled image.
-  $variables['path'] = image_style_url($variables['style_name'], $variables['path']);
+  // Todo: Save style image to memorycahce, Storage is too slow.
+  $variables['path'] = sae_image_style_url($variables['style_name'], $variables['path']);
 
   return theme('image', $variables);
+}
+
+/**
+ * Return the URL for an image derivative given a style and image path.
+ *
+ * The absolute URL where a style image can be downloaded, suitable for use in 
+ * an <img> tag. Requesting the URL will cause the image to be created. 
+ *
+ * @param string $style_name
+ *   The name of the style to be used with this image.
+ * @param string $path
+ *   The path to the image.
+ * @return
+ *   The absolute URL where a style image can be downloaded, suitable for use
+ *   in an <img> tag. Requesting the URL will cause the image to be created.
+ */
+function sae_image_style_url($style_name, $path) {
+  $uri = image_style_path($style_name, $path);
+
+  // What ever if not using clean URLs, If the file does not exist, use url() 
+  // to ensure that it is included. Once the file exists it's fine to fall back 
+  // to the actual file path, this avoids bootstrapping PHP once the files are 
+  // built.
+  if (file_uri_scheme($uri) == 'public' && !file_exists($uri)) {
+    $directory_path = file_stream_wrapper_get_instance_by_uri($uri)->getDirectoryPath();
+    return url($directory_path . '/' . file_uri_target($uri), array('absolute' => TRUE));
+  }
+
+  return file_create_url($uri);
 }
 
 /**
@@ -369,7 +398,7 @@ function sae_form_system_file_system_settings_alter(&$form, &$form_state, $form_
 function sae_file_presave($file) {
   // Fetch filesize until file system is ready.
   while (!$file->filesize) {
-    $file->filesize = filesize($file->uri);
+    $file->filesize = @filesize($file->uri);
     sleep(1);
   }
 }

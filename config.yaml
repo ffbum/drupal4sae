@@ -2,10 +2,10 @@ name: drupaldev
 version: 1
 
 handle:
+  - rewrite:if (!is_file() && !is_dir() && path ~ "^/(.*)") goto "?q=/$1&%{QUERY_STRING}"
   - directoryindex: index.php index.html index.htm
   - errordoc: 404 /index.php
   - hostaccess: if(path ~ "(^|/)\.") deny "all"
   - hostaccess: if(path ~ "\.(engine|inc|info|install|make|module|profile|test|po|sh|.*sql|theme|tpl(\.php)?|xtmpl)$") deny "all"
   - hostaccess: if(path ~ "\^(\..*|Entries.*|Repository|Root|Tag|Template)$") deny "all"
   - expire: if( path ~ "\.?!php$") time 86400
-  - rewrite:if (!is_file() && !is_dir() && path ~ "^/(.*)") goto "?q=/$1&%{QUERY_STRING}"

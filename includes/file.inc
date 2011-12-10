@@ -570,7 +570,7 @@ function file_load($fid) {
  */
 function file_save(stdClass $file) {
   $file->timestamp = REQUEST_TIME;
-  $file->filesize = filesize($file->uri);
+  $file->filesize = @filesize($file->uri);
 
   // Load the stored entity, if any.
   if (!empty($file->fid) && !isset($file->original)) {

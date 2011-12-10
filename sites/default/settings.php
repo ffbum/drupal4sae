@@ -183,7 +183,6 @@ $databases['default']['default'] = array(
   'username' => SAE_MYSQL_USER,
   'password' => SAE_MYSQL_PASS,
   'host' => SAE_MYSQL_HOST_M.":".SAE_MYSQL_PORT,
-  'prefix' => 'dp2_',
 );
 $databases['default']['slave'][] = array(
   'driver' => 'mysql',
@@ -191,7 +190,6 @@ $databases['default']['slave'][] = array(
   'username' => SAE_MYSQL_USER,
   'password' => SAE_MYSQL_PASS,
   'host' => SAE_MYSQL_HOST_S.":".SAE_MYSQL_PORT,
-  'prefix' => 'dp2_',
 );
 /**
  * Access control for update.php script.

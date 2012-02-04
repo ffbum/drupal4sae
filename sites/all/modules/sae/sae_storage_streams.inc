@@ -86,7 +86,7 @@ class SaeStorageStreamWrapper implements DrupalStreamWrapperInterface {
     }
 
     $extension = '';
-    $file_parts = explode('.', basename($this->getTarget($uri)));
+    $file_parts = explode('.', basename(self::getTarget($uri)));
 
     // Remove the first part: a full filename should not match an extension.
     array_shift($file_parts);

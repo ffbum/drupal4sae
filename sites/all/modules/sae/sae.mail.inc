@@ -15,36 +15,36 @@ class SAEMailSystem implements MailSystemInterface {
   public function __construct() {
     $this->mailer = new SaeMail();
 
-    $this->Host = variable_get('smtp_host', '');
-    $this->Port = variable_get('smtp_port', '25');
-    $this->SMTPSecure = variable_get('smtp_tls', FALSE) ? TRUE : FALSE;
+    $this->Host = variable_get('sae_smtp_host', '');
+    $this->Port = variable_get('sae_smtp_port', '25');
+    $this->SMTPSecure = variable_get('sae_smtp_tls', FALSE) ? TRUE : FALSE;
 
     // Use SMTP authentication if both username and password are given.
-    $this->Username = variable_get('smtp_username', '');
-    $this->Password = variable_get('smtp_password', '');
-    $this->SMTPAuth = (bool)($this->Username != '' && $this->Password != '');
+    $this->Username = variable_get('sae_smtp_username', '');
+    $this->Password = variable_get('sae_smtp_password', '');
+    $this->SMTPAuth = (bool) ($this->Username != '' && $this->Password != '');
   }
-  
+
   /**
    * Send mail user SAE mail system
    *
-   * @return
+   * @return bool
    *   If Succeed, return ture, else return false.
    */
   public function send() {
-    $ret = $this->mailer->quickSend($this->To , $this->Subject , $this->Body , $this->Username , $this->Password);
+    $ret = $this->mailer->quickSend($this->To, $this->Subject, $this->Body, $this->Username, $this->Password);
     $this->reset();
     return $ret;
   }
-  
+
   /**
    * Clean mail status so we can send mail again
    */
   public function reset() {
-    // Clean SAE Mail
+    // Clean SAE Mail.
     $this->mailer->clean();
   }
-  
+
   /**
    * Concatenates and wraps the e-mail body for plain-text mails.
    *
@@ -52,12 +52,10 @@ class SAEMailSystem implements MailSystemInterface {
    * module, plain-text e-mails are sent, which require the same processing as
    * in the DefaultMailSystem implementation.
    *
-   * @see DefaultMailSystem::format()
-   *
-   * @param $message
+   * @param string $message
    *   A message array, as described in hook_mail_alter().
    *
-   * @return
+   * @return string
    *   The formatted $message.
    */
   public function format(array $message) {
@@ -73,19 +71,18 @@ class SAEMailSystem implements MailSystemInterface {
   /**
    * Sends an e-mail message composed by drupal_mail().
    *
-   * @param $message
+   * @param array $message
    *   A message array, as described in hook_mail_alter().
-   * @return
-   *   TRUE if the mail was successfully accepted, otherwise FALSE.
    *
-   * @see PHPMailer::Send()
+   * @return bool
+   *   TRUE if the mail was successfully accepted, otherwise FALSE.
    */
   public function mail(array $message) {
     $from = sae_mailer_parse_address($message['from']);
     $from = reset($from);
     $this->From = $from['mail'];
     unset($message['headers']['From']);
-    
+
     $this->To = '';
     foreach (sae_mailer_parse_address($message['to']) as $address) {
       $this->To .= $address['mail'] . ',';
@@ -97,10 +94,11 @@ class SAEMailSystem implements MailSystemInterface {
       }
       unset($message['headers']['Cc']);
     }
-    
+
     if (isset($message['headers']['Content-Type'])) {
-      if ($message['headers']['Content-Type'] == 'TEXT' || $message['headers']['Content-Type'] == 'HTML')
+      if ($message['headers']['Content-Type'] == 'TEXT' || $message['headers']['Content-Type'] == 'HTML') {
         $this->ContentType = $message['headers']['Content-Type'];
+      }
       unset($message['headers']['Content-Type']);
     }
     $line_endings = variable_get('mail_line_endings', MAIL_LINE_ENDINGS);
@@ -111,8 +109,7 @@ class SAEMailSystem implements MailSystemInterface {
     // line-ending format appropriate for your system. If you need to
     // override this, adjust $conf['mail_line_endings'] in settings.php.
     $this->Body = preg_replace('@\r?\n@', $line_endings, $message['body']);
-    
+
     return $this->send();
   }
 }
-

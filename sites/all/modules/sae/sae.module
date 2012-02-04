@@ -46,24 +46,24 @@ function sae_mailer_settings_form($form, $form_state) {
     '#description' => t('When enabled, SAE Mail will be used to deliver all site e-mails.'),
   );
 
-  $form['server']['smtp_host'] = array(
+  $form['server']['sae_smtp_host'] = array(
     '#type' => 'textfield',
     '#title' => t('Primary SMTP server'),
-    '#default_value' => variable_get('smtp_host', ''),
+    '#default_value' => variable_get('sae_smtp_host', ''),
     '#description' => t('The host name or IP address of your primary SMTP server. (Leave blank if use sina,mail,163,265,netease,qq,sohu,yahoo smtp service)', array('!gmail-smtp' => '<code>smtp.gmail.com</code>')),
   );
-  $form['server']['smtp_port'] = array(
+  $form['server']['sae_smtp_port'] = array(
     '#type' => 'textfield',
     '#title' => t('SMTP port'),
     '#size' => 5,
     '#maxlength' => 5,
-    '#default_value' => variable_get('smtp_port', ''),
+    '#default_value' => variable_get('sae_smtp_port', ''),
     '#description' => t('The standard SMTP port is 25, for Google Mail use 465. (Leave blank if use sina,mail,163,265,netease,qq,sohu,yahoo smtp service)'),
   );
-  $form['server']['smtp_tls'] = array(
+  $form['server']['sae_smtp_tls'] = array(
     '#type' => 'checkbox',
     '#title' => t('Use TLS protocol'),
-    '#default_value' => variable_get('smtp_tls', ''),
+    '#default_value' => variable_get('sae_smtp_tls', ''),
     '#description' => t('Whether to use TLS encrypted connection to communicate with the SMTP server. (Leave blank if use sina,mail,163,265,netease,qq,sohu,yahoo smtp service)'),
   );
 
@@ -74,17 +74,17 @@ function sae_mailer_settings_form($form, $form_state) {
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
   );
-  $form['auth']['smtp_username'] = array(
+  $form['auth']['sae_smtp_username'] = array(
     '#type' => 'textfield',
     '#title' => t('Username'),
     '#required' => TRUE,
-    '#default_value' => variable_get('smtp_username', ''),
+    '#default_value' => variable_get('sae_smtp_username', ''),
     '#description' => t('Always enter your username including mail adress like "example@gmail.com".'),
   );
-  $have_password = (variable_get('smtp_password', '') != '');
+  $have_password = (variable_get('sae_smtp_password', '') != '');
   $password_title = $have_password ? t('Change password') : t('Password');
   $password_description = $have_password ? t('Leave empty if you do not intend to change the current password.') : t('Password of smtp server, usually is your email password.');
-  $form['auth']['smtp_password'] = array(
+  $form['auth']['sae_smtp_password'] = array(
     '#type' => 'password',
     '#title' => check_plain($password_title),
     '#description' => check_plain($password_description),
@@ -122,26 +122,12 @@ function sae_mailer_settings_form($form, $form_state) {
 }
 
 /**
- * Form validation function.
- *
- * @see sae_mailer_settings_form()
- */
-function sae_mailer_settings_form_validate($form, &$form_state) {
-  if ($form_state['values']['sae_on']) {
-    if (intval($form_state['values']['smtp_port']) == 0) {
-      // form_set_error('smtp_port', t('You must enter a valid SMTP port number.
-      // '));
-    }
-  }
-}
-
-/**
  * Form submit function.
  *
  * @see sae_mailer_settings_form()
  */
 function sae_mailer_settings_form_submit($form, &$form_state) {
-  // Enable/disable mail sending subsystem.
+  // Enable / disable mail sending subsystem.
   if ($form_state['values']['sae_on']) {
     if (!sae_mailer_enabled()) {
       $mail_system = variable_get('mail_system', array('default-system' => 'DefaultMailSystem'));
@@ -174,15 +160,15 @@ function sae_mailer_settings_form_submit($form, &$form_state) {
   // Log configuration changes.
   $settings = array('host', 'port', 'tls', 'username');
   // Ignore empty passwords if hide password is active.
-  if ($form_state['values']['smtp_password'] == '') {
-    unset($form_state['values']['smtp_password']);
+  if ($form_state['values']['sae_smtp_password'] == '') {
+    unset($form_state['values']['sae_smtp_password']);
   }
   else {
     $settings[] = 'password';
   }
 
   foreach ($settings as $setting) {
-    if ($form_state['values']['smtp_' . $setting] != variable_get('smtp_' . $setting, '')) {
+    if ($form_state['values']['sae_smtp_' . $setting] != variable_get('sae_smtp_' . $setting, '')) {
       watchdog('sae', 'SMTP configuration changed.');
       break;
     }
@@ -216,6 +202,7 @@ function sae_mailer_enabled() {
  * @param string $string
  *   A string containing one or more valid e-mail address(es) separated with
  *   commas.
+ *
  * @return array
  *   An array containing all found e-mail addresses split into mail and name.
  */
@@ -269,30 +256,6 @@ function _sae_mailer_stack($matches = NULL) {
   // Return placeholder substitution. 0x01 may never appear outside a quoted
   // string (3.2.3).
   return "\x01";
-}
-
-/**
- * Implements hook_disable().
- */
-function sae_disable() {
-  if (sae_mailer_enabled()) {
-    // Remove SAE Mail from all mail keys it is configured for.
-    $mail_system = variable_get('mail_system', array('default-system' => 'DefaultMailSystem'));
-    foreach ($mail_system as $key => $class) {
-      if ($class == 'SAEMailSystem') {
-        if ($key != 'default-system') {
-          unset($mail_system[$key]);
-        }
-        else {
-          $mail_system[$key] = 'DefaultMailSystem';
-        }
-      }
-    }
-    variable_set('mail_system', $mail_system);
-
-    variable_del('sae_on');
-    drupal_set_message(t('SAE Mail has been disabled.'));
-  }
 }
 
 /**
@@ -352,23 +315,24 @@ function theme_sae_image_style($variables) {
 /**
  * Return the URL for an image derivative given a style and image path.
  *
- * The absolute URL where a style image can be downloaded, suitable for use in 
- * an <img> tag. Requesting the URL will cause the image to be created. 
+ * The absolute URL where a style image can be downloaded, suitable for use in
+ * an <img> tag. Requesting the URL will cause the image to be created.
  *
  * @param string $style_name
  *   The name of the style to be used with this image.
  * @param string $path
  *   The path to the image.
- * @return
+ *
+ * @return string
  *   The absolute URL where a style image can be downloaded, suitable for use
  *   in an <img> tag. Requesting the URL will cause the image to be created.
  */
 function sae_image_style_url($style_name, $path) {
   $uri = image_style_path($style_name, $path);
 
-  // What ever if not using clean URLs, If the file does not exist, use url() 
-  // to ensure that it is included. Once the file exists it's fine to fall back 
-  // to the actual file path, this avoids bootstrapping PHP once the files are 
+  // What ever if not using clean URLs, If the file does not exist, use url()
+  // to ensure that it is included. Once the file exists it's fine to fall back
+  // to the actual file path, this avoids bootstrapping PHP once the files are
   // built.
   if (file_uri_scheme($uri) == 'public' && !file_exists($uri)) {
     $directory_path = file_stream_wrapper_get_instance_by_uri($uri)->getDirectoryPath();

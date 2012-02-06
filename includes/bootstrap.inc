@@ -699,16 +699,16 @@ function drupal_environment_initialize() {
   // The .htaccess file contains settings that cannot be changed at runtime.
 
   // Don't escape quotes when reading files from the database, disk, etc.
-  ini_set('magic_quotes_runtime', '0');
+  @ini_set('magic_quotes_runtime', '0');
   // Use session cookies, not transparent sessions that puts the session id in
   // the query string.
-  ini_set('session.use_cookies', '1');
-  ini_set('session.use_only_cookies', '1');
-  ini_set('session.use_trans_sid', '0');
+  @ini_set('session.use_cookies', '1');
+  @ini_set('session.use_only_cookies', '1');
+  @ini_set('session.use_trans_sid', '0');
   // Don't send HTTP headers using PHP's session handler.
-  ini_set('session.cache_limiter', 'none');
+  @ini_set('session.cache_limiter', 'none');
   // Use httponly session cookies.
-  ini_set('session.cookie_httponly', '1');
+  @ini_set('session.cookie_httponly', '1');
 
   // Set sane locale settings, to ensure consistent string, dates, times and
   // numbers handling.
@@ -796,7 +796,7 @@ function drupal_settings_initialize() {
   // Per RFC 2109, cookie domains must contain at least one dot other than the
   // first. For hosts such as 'localhost' or IP Addresses we don't set a cookie domain.
   if (count(explode('.', $cookie_domain)) > 2 && !is_numeric(str_replace('.', '', $cookie_domain))) {
-    ini_set('session.cookie_domain', $cookie_domain);
+    @ini_set('session.cookie_domain', $cookie_domain);
   }
   // To prevent session cookies from being hijacked, a user can configure the
   // SSL version of their website to only transfer session cookies via SSL by
@@ -805,7 +805,7 @@ function drupal_settings_initialize() {
   // must use different session identifiers for HTTPS and HTTP to prevent a
   // cookie collision.
   if ($is_https) {
-    ini_set('session.cookie_secure', TRUE);
+    @ini_set('session.cookie_secure', TRUE);
   }
   $prefix = ini_get('session.cookie_secure') ? 'SSESS' : 'SESS';
   session_name($prefix . substr(hash('sha256', $session_name), 0, 32));
@@ -1377,7 +1377,7 @@ function drupal_serve_page_from_cache(stdClass $cache) {
     if ($return_compressed) {
       // $cache->data['body'] is already gzip'ed, so make sure
       // zlib.output_compression does not compress it once more.
-      ini_set('zlib.output_compression', '0');
+      @ini_set('zlib.output_compression', '0');
       header('Content-Encoding: gzip');
     }
     else {

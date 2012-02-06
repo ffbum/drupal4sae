@@ -802,7 +802,7 @@ function drupal_http_request($url, array $options = array()) {
     case 'http':
     case 'feed':
       $port = isset($uri['port']) ? $uri['port'] : 80;
-      $socket = 'tcp://' . $uri['host'] . ':' . $port;
+      $socket = 'tcp://' . $uri['host'];
       // RFC 2616: "non-standard ports MUST, default ports MAY be included".
       // We don't add the standard port to prevent from breaking rewrite rules
       // checking the host that do not take into account the port number.
@@ -811,7 +811,7 @@ function drupal_http_request($url, array $options = array()) {
     case 'https':
       // Note: Only works when PHP is compiled with OpenSSL support.
       $port = isset($uri['port']) ? $uri['port'] : 443;
-      $socket = 'ssl://' . $uri['host'] . ':' . $port;
+      $socket = 'ssl://' . $uri['host'];
       $options['headers']['Host'] = $uri['host'] . ($port != 443 ? ':' . $port : '');
       break;
     default:
@@ -821,11 +821,11 @@ function drupal_http_request($url, array $options = array()) {
   }
 
   if (empty($options['context'])) {
-    $fp = @stream_socket_client($socket, $errno, $errstr, $options['timeout']);
+    $fp = @fsockopen($socket, $port, $errno, $errstr, $options['timeout']);
   }
   else {
     // Create a stream with context. Allows verification of a SSL certificate.
-    $fp = @stream_socket_client($socket, $errno, $errstr, $options['timeout'], STREAM_CLIENT_CONNECT, $options['context']);
+    $fp = @fsockopen($socket, $port, $errno, $errstr, $options['timeout'], STREAM_CLIENT_CONNECT, $options['context']);
   }
 
   // Make sure the socket opened properly.

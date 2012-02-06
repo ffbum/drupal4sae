@@ -331,9 +331,8 @@ function system_requirements($phase) {
     if ($phase == 'install') {
       file_prepare_directory($directory, FILE_CREATE_DIRECTORY);
     }
-    // [SAE]Bypass directoray check.
-    $is_writable = TRUE;
-    $is_directory = TRUE;
+    $is_writable = is_writable($directory);
+    $is_directory = is_dir($directory);
     if (!$is_writable || !$is_directory) {
       $description = '';
       $requirements['file system']['value'] = $t('Not writable');
@@ -2243,10 +2242,6 @@ function system_update_7036() {
     ));
   }
   $insert->execute();
-
-  // Remove obsolete variable 'site_offline_message'. See
-  // update_fix_d7_requirements().
-  variable_del('site_offline_message');
 }
 
 /**
@@ -2972,6 +2967,15 @@ function system_update_7071() {
     'length' => 255,
     'not null' => TRUE,
   ));
+}
+
+/**
+ * Remove the obsolete 'site_offline_message' variable.
+ *
+ * @see update_fix_d7_requirements()
+ */
+function system_update_7072() {
+  variable_del('site_offline_message');
 }
 
 /**

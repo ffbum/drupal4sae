@@ -1,6 +1,6 @@
 -- 简介 --
 
-可在新浪 App Engine（SAE）上安装并正常使用Drupal 7.x.
+可在新浪 App Engine（SAE）上安装并正常使用的Drupal 7.x.
 
 Demo测试站点及最新更新：
   http://drupaldev.sinaapp.com/

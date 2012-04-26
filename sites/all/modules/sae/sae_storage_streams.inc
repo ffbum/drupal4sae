@@ -6,11 +6,11 @@
  */
 
 class SaeStorageStreamWrapper implements DrupalStreamWrapperInterface {
-  private $writen = TRUE;
+  protected $writen = TRUE;
   public $context;
   public $handle = NULL;
   protected $uri;
-  private $i = 0;
+  protected $i = 0;
 
   /**
    * Constructor.
@@ -105,7 +105,7 @@ class SaeStorageStreamWrapper implements DrupalStreamWrapperInterface {
   }
 
   /**
-   * Implements of chmod
+   * Implements of StreamWrapperInterface::chmod().
    *
    * @return bool
    *   Always return true
@@ -127,7 +127,7 @@ class SaeStorageStreamWrapper implements DrupalStreamWrapperInterface {
   }
 
   /**
-   * Implements of dirname
+   * Implements of StreamWrapperInterface::dirname().
    *
    * @param string $uri
    *   Uri of file
@@ -198,7 +198,7 @@ class SaeStorageStreamWrapper implements DrupalStreamWrapperInterface {
   }
 
   /**
-   * Implements of stream_open
+   * Implements of StreamWrapperInterface::stream_open().
    */
   public function stream_open($uri, $mode, $options, &$opened_path) {
     $this->uri = $uri;
@@ -247,7 +247,7 @@ class SaeStorageStreamWrapper implements DrupalStreamWrapperInterface {
   }
 
   /**
-   * Implements of stream_read
+   * Implements of StreamWrapperInterface::stream_read().
    */
   public function stream_read($count) {
     if (in_array($this->mode, array('w', 'x', 'a', 'wb', 'xb', 'ab'))) {
@@ -261,7 +261,7 @@ class SaeStorageStreamWrapper implements DrupalStreamWrapperInterface {
   }
 
   /**
-   * Implements of stream_write
+   * Implements of StreamWrapperInterface::stream_write().
    */
   public function stream_write($data) {
     if (in_array($this->mode, array('r', 'rb'))) {
@@ -281,7 +281,7 @@ class SaeStorageStreamWrapper implements DrupalStreamWrapperInterface {
   }
 
   /**
-   * Implements of stream_close
+   * Implements of StreamWrapperInterface::stream_close().
    */
   public function stream_close() {
     if (!$this->writen) {
@@ -291,21 +291,21 @@ class SaeStorageStreamWrapper implements DrupalStreamWrapperInterface {
   }
 
   /**
-   * Implements of stream_eof
+   * Implements of StreamWrapperInterface::stream_eof().
    */
   public function stream_eof() {
     return $this->position >= strlen($this->fcontent);
   }
 
   /**
-   * Implements of stream_tell
+   * Implements of StreamWrapperInterface::stream_tell().
    */
   public function stream_tell() {
     return $this->position;
   }
 
   /**
-   * Implements of stream_seek
+   * Implements of StreamWrapperInterface::stream_seek().
    */
   public function stream_seek($offset , $whence = SEEK_SET) {
     switch ($whence) {
@@ -342,7 +342,7 @@ class SaeStorageStreamWrapper implements DrupalStreamWrapperInterface {
   }
 
   /**
-   * Implements of unlink
+   * Implements of StreamWrapperInterface::unlink().
    */
   public function unlink($uri) {
     $this->uri = $uri;
@@ -357,7 +357,7 @@ class SaeStorageStreamWrapper implements DrupalStreamWrapperInterface {
   }
 
   /**
-   * Implements of stream_flush
+   * Implements of StreamWrapperInterface::stream_flush().
    */
   public function stream_flush() {
     if (!$this->writen) {
@@ -368,14 +368,14 @@ class SaeStorageStreamWrapper implements DrupalStreamWrapperInterface {
   }
 
   /**
-   * Implements of stream_stat
+   * Implements of StreamWrapperInterface::stream_stat().
    */
   public function stream_stat() {
     return array();
   }
 
   /**
-   * Implements of url_stat
+   * Implements of StreamWrapperInterface::url_stat().
    */
   public function url_stat($uri, $flags) {
     $this->uri = $uri;
@@ -429,7 +429,7 @@ class SaeStorageStreamWrapper implements DrupalStreamWrapperInterface {
   }
 
   /**
-   * Implements of closedir
+   * Implements of StreamWrapperInterface::closedir().
    */
   public function dir_closedir() {
     unset($this->total_index[$this->uri]);
@@ -439,7 +439,7 @@ class SaeStorageStreamWrapper implements DrupalStreamWrapperInterface {
   }
 
   /**
-   * Implements of opendir
+   * Implements of StreamWrapperInterface::opendir().
    */
   public function dir_opendir($uri, $options) {
     $this->uri = $uri;
@@ -451,7 +451,7 @@ class SaeStorageStreamWrapper implements DrupalStreamWrapperInterface {
   }
 
   /**
-   * Implements of readdir
+   * Implements of StreamWrapperInterface::readdir().
    */
   public function dir_readdir() {
     self::stor();
@@ -482,7 +482,7 @@ class SaeStorageStreamWrapper implements DrupalStreamWrapperInterface {
   }
 
   /**
-   * Implements of rewinddir
+   * Implements of StreamWrapperInterface::rewinddir().
    */
   public function dir_rewinddir() {
     if (isset($this->search_offset[$this->uri])) {
@@ -493,7 +493,7 @@ class SaeStorageStreamWrapper implements DrupalStreamWrapperInterface {
   }
 
   /**
-   * Implements of mkdir
+   * Implements of StreamWrapperInterface::mkdir().
    */
   public function mkdir($uri, $mode, $options) {
     // Always return true because we do not need create directories manually.
@@ -501,35 +501,35 @@ class SaeStorageStreamWrapper implements DrupalStreamWrapperInterface {
   }
 
   /**
-   * Implements of rename
+   * Implements of StreamWrapperInterface::rename().
    */
   public function rename($path_from, $path_to) {
     return FALSE;
   }
 
   /**
-   * Implements of rmdir
+   * Implements of StreamWrapperInterface::rmdir().
    */
   public function rmdir($uri, $options) {
     return FALSE;
   }
 
   /**
-   * Implements of stream_cast
+   * Implements of StreamWrapperInterface::stream_cast().
    */
   public function stream_cast($cast_as) {
     return FALSE;
   }
 
   /**
-   * Implements of stream_lock
+   * Implements of StreamWrapperInterface::stream_lock().
    */
   public function stream_lock($operation) {
     return FALSE;
   }
 
   /**
-   * Implements of stream_set_option
+   * Implements of StreamWrapperInterface::stream_set_option().
    */
   public function stream_set_option($option, $arg1, $arg2) {
     return FALSE;

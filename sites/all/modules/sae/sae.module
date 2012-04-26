@@ -86,8 +86,8 @@ function sae_mailer_settings_form($form, $form_state) {
   $password_description = $have_password ? t('Leave empty if you do not intend to change the current password.') : t('Password of smtp server, usually is your email password.');
   $form['auth']['sae_smtp_password'] = array(
     '#type' => 'password',
-    '#title' => check_plain($password_title),
-    '#description' => check_plain($password_description),
+    '#title' => $password_title,
+    '#description' => $password_description,
   );
 
   // Send a test email message if an address has been entered.

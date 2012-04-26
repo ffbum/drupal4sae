@@ -15,14 +15,14 @@ class SAEMailSystem implements MailSystemInterface {
   public function __construct() {
     $this->mailer = new SaeMail();
 
-    $this->Host = variable_get('sae_smtp_host', '');
-    $this->Port = variable_get('sae_smtp_port', '25');
-    $this->SMTPSecure = variable_get('sae_smtp_tls', FALSE) ? TRUE : FALSE;
+    $this->host = variable_get('sae_smtp_host', '');
+    $this->port = variable_get('sae_smtp_port', '25');
+    $this->smtpSecure = variable_get('sae_smtp_tls', FALSE) ? TRUE : FALSE;
 
     // Use SMTP authentication if both username and password are given.
-    $this->Username = variable_get('sae_smtp_username', '');
-    $this->Password = variable_get('sae_smtp_password', '');
-    $this->SMTPAuth = (bool) ($this->Username != '' && $this->Password != '');
+    $this->userName = variable_get('sae_smtp_username', '');
+    $this->password = variable_get('sae_smtp_password', '');
+    $this->smtpAuth = (bool) ($this->userName != '' && $this->password != '');
   }
 
   /**
@@ -32,7 +32,7 @@ class SAEMailSystem implements MailSystemInterface {
    *   If Succeed, return ture, else return false.
    */
   public function send() {
-    $ret = $this->mailer->quickSend($this->To, $this->Subject, $this->Body, $this->Username, $this->Password);
+    $ret = $this->mailer->quickSend($this->to, $this->subject, $this->body, $this->userName, $this->password);
     $this->reset();
     return $ret;
   }
@@ -80,35 +80,35 @@ class SAEMailSystem implements MailSystemInterface {
   public function mail(array $message) {
     $from = sae_mailer_parse_address($message['from']);
     $from = reset($from);
-    $this->From = $from['mail'];
+    $this->from = $from['mail'];
     unset($message['headers']['From']);
 
-    $this->To = '';
+    $this->to = '';
     foreach (sae_mailer_parse_address($message['to']) as $address) {
-      $this->To .= $address['mail'] . ',';
+      $this->to .= $address['mail'] . ',';
     }
     if (isset($message['headers']['Cc'])) {
-      $this->Cc = '';
+      $this->cc = '';
       foreach (sae_mailer_parse_address($message['headers']['Cc']) as $address) {
-        $this->Cc .= $address['mail'] . ',';
+        $this->cc .= $address['mail'] . ',';
       }
       unset($message['headers']['Cc']);
     }
 
     if (isset($message['headers']['Content-Type'])) {
       if ($message['headers']['Content-Type'] == 'TEXT' || $message['headers']['Content-Type'] == 'HTML') {
-        $this->ContentType = $message['headers']['Content-Type'];
+        $this->contentType = $message['headers']['Content-Type'];
       }
       unset($message['headers']['Content-Type']);
     }
     $line_endings = variable_get('mail_line_endings', MAIL_LINE_ENDINGS);
     // Prepare mail commands.
-    $this->Subject = $message['subject'];
+    $this->subject = $message['subject'];
     // Note: e-mail uses CRLF for line-endings. PHP's API requires LF
     // on Unix and CRLF on Windows. Drupal automatically guesses the
     // line-ending format appropriate for your system. If you need to
     // override this, adjust $conf['mail_line_endings'] in settings.php.
-    $this->Body = preg_replace('@\r?\n@', $line_endings, $message['body']);
+    $this->body = preg_replace('@\r?\n@', $line_endings, $message['body']);
 
     return $this->send();
   }
